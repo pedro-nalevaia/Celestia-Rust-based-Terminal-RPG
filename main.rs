@@ -4,102 +4,237 @@ use std::fs::File;
 
 fn main() {
 
-    let mut user_input;
+	//The scene system is implemented by the interface variable. Each interface value will branch the program
+	//to a different scene. Scenes exit returning an interface value to the next scene.
+	
+	//Scene Key
+	//1 - menu
+	//2 - file_screen
+	//
 
-    println!("==========================================================================");
-    println!("   __   ");
-    println!("  /  \\  /\\         |  ");
-    println!(" /      ||       __|__     __ ");
-    println!(" |   /\\ ||  /\\ /\\  |   o  |  |" );
-    println!(" |   \\/ ||  \\/ | \\ |   |  |  | ");
-    println!("  \\__/\\_\\/__/\\_/_/_|___|__\\__\\_");
-    println!("==========================================================================");
-    println!(" ");
-    println!(" ");
+	let mut interface = 1;
 
-    loop {
-
-            user_input = String::new();
-            println!("1 - Start");
-            println!("2 -Quit");
-
-            io::stdin()
-                .read_line(&mut user_input)
-                .expect("Failed to read line");
-            
-            user_input = String::from(user_input.trim_end());
-            
-            if user_input == String::from("1") {
-                file_management();
-            }
-            else if user_input == String::from("2") {
-                println!("Bye!");
-                break;
-            }
-            else {
-                println!("Please input a valid command");
-                      }
-    }
-}
-
-fn file_management() -> std::io::Result<()> {
-
-    //save data
-    let mut user_input;
-    let mut save_string = String::new();
-    let mut file = File::open("data/saves.txt")?;
-    file.read_to_string(&mut save_string);
-    
-    //save data model
-    struct save_data {
-        is_empty: bool, 
-        display: String,
-    }
-
-    //read buffers
-    let mut gen_buffer;
-    let mut line_buffer = String::new();
-    let mut par_buffer = String::new();
-
-    let mut save_data_list: Vec<save_data> = Vec::new();
-    
-    //inputs file data
-    for i in 1..7 {
-        gen_buffer = save_string.clone();
-        line_buffer = line_n(gen_buffer, i);
-        par_buffer = parameter_return(line_buffer, String::from("EMPTY"));
-        if par_buffer == "YES       " {
-            save_data_list.push(save_data {is_empty:true, display:String::from("            EMPTY             ")});
-        }
-        else {
-            println!("Error");
-        }
-        }
-    
-
-    //initialize the data models
-    
-    //usefull to know the slots must have 30 characters of spacing
-
-    println!("---------------------------------------");
-    println!("|SELECT A SLOT (TYPE SLOT NUMBER)     |");
-    println!("=======================================");
-    println!("|Slot 1-{}|", save_data_list[0].display);
-    println!("|Slot 2-{}|", save_data_list[1].display);
-    println!("|Slot 3-{}|", save_data_list[2].display);
-    println!("|Slot 4-{}|", save_data_list[3].display);
-    println!("|Slot 5-{}|", save_data_list[4].display);
-    println!("|Slot 6-{}|", save_data_list[5].display);
-    println!("=======================================");
-    println!("|Type C to clear all save data        |");
-    println!("=======================================");
-
-    loop {
-        user_input = String::new();
+	loop {
+		if interface == 1 {
+			 interface = main_menu();
+		}
+		if interface == 2 {
+			interface = file_management();
+		}
+	}
+     }
 
 
-    }
-}
+//==================================
+//MENU FUNCTIONS
+//===================================
+
+	fn main_menu() -> i32 {
+
+		use std::process;
+		let mut user_input;
+	
+	  	println!("==========================================================================");
+	  	println!("   __   ");
+	  	println!("  /  \\  /\\         |  ");
+	  	println!(" /      ||       __|__     __ ");
+	  	println!(" |   /\\ ||  /\\ /\\  |   o  |  |" );
+	  	println!(" |   \\/ ||  \\/ | \\ |   |  |  | ");
+	  	println!("  \\__/\\_\\/__/\\_/_/_|___|__\\__\\_");
+	  	println!("==========================================================================");
+	  	println!(" ");
+	  	println!(" ");
+	
+	  	loop {
+	
+	  	        user_input = String::new();
+	  	        println!("1 - Start");
+	  	        println!("2 -Quit");
+
+			user_input = get_string(); 
+	  	        
+	  	        if user_input == String::from("1") {
+	  	            return 2;
+	  	        }
+	  	        else if user_input == String::from("2") {
+	  	            println!("Bye!");
+	  	            process::exit(1);
+	  	        }
+	  	        else {
+	  	            println!("Please input a valid command");
+			}
+		}
+	}
+//==========================================================================================	
+	fn file_management() -> i32 {
+	
+	    //save data
+	    let mut user_input;
+	    
+	    //usefull to know the slots must have 30 characters of spacing
+	loop{	
+	    println!("---------------------------------------");
+	    println!("|SELECT A SLOT (TYPE SLOT NUMBER)     |");
+	    println!("=======================================");
+	    println!("|Slot 1-{}|", file_display(1));
+	    println!("|Slot 2-{}|", file_display(2));
+	    println!("|Slot 3-{}|", file_display(3));
+	    println!("|Slot 4-{}|", file_display(4));
+	    println!("|Slot 5-{}|", file_display(5));
+	    println!("|Slot 6-{}|", file_display(6));
+	    println!("=======================================");
+	    println!("|Type C to clear all save data        |");
+	    println!("|Type M to go back to the main menu   |");
+	    println!("=======================================");
+	
+	        user_input = String::new();
+		user_input = get_string();	
+		
+		if user_input == String::from("C") {
+			
+			loop{
+				println!("Are you sure?(Y/N)");
+				user_input = get_string();
+
+				if user_input == String::from("Y"){
+					clear_data();
+					break;
+				}	
+				
+				if user_input == String::from("N"){
+					break;
+				}
+			}
+	
+		}
+		
+		else if user_input == String::from("M") {
+			return 1;
+		}
+		//converts string to integer and proceds to file manipulation
+		else {
+			//the file number parser might be an integer or an error;
+			let mut file_number = user_input.parse::<i32>();
+			
+			match file_number {
+				Ok(file_number) => {
+					
+								
+					//sanity check for if the file_save exists
+					let allowed_values = vec![1,2,3,4,5,6];
+					if allowed_values.contains(&file_number) {
+						file_manipulation(file_number);
+					}
+				}
+				Err(file_number) => (),
+			}
+		}
+	    }
+	}
+
+//==========================================================================================	
+
+	fn char_creation() {
+		println!("To be implemented");
+	}
+
+//==================================
+//SAVE DATA MANIPULATION FUNCTIONS
+//==================================
+	fn clear_data() {
+		println!("To be implemented");
+	}
+
+	fn file_manipulation(file_number: i32) {
+		println!("================================");
+	    	println!("|Slot {}-{}|", file_number, file_display(file_number));
+		println!("================================");
+	
+		let mut user_input;
+
+		//the option bar depends on wether the file is empty or not so we handle that
+		if is_slot_empty(file_number) == true {
+			println!("|a-Start New Game              |");
+			println!("|b-Back to File Selection      |");
+			println!("================================");
+
+			user_input = get_string();
+
+
+			if user_input == String::from("1") {
+				char_creation();
+			}
+			
+			if user_input == String::from("2") {
+				file_management();	
+			}
+			else {
+				file_manipulation(file_number);
+			}
+		}
+		else {
+			println!("to be implemented");
+		}
+
+	}
+
+	//this function outputs a 30 char string with the characteristics of the slot that are shown in the interface
+	//such as character name, level and so on
+	fn file_display(file_number: i32) -> String {
+		let mut return_string = String::new();
+		if is_slot_empty(file_number) == true {
+			return_string = String::from("             EMPTY            ");
+		}
+		//the other case is not implemented yet
+		return return_string;
+	}
+
+	fn is_slot_empty(slot: i32) -> bool {
+	
+		use std::fs;
+
+		//reads the file and puts into save_string
+		let mut save_string = String::new();
+	    	
+		let mut file = match File::open("data/saves.txt") {
+			Err(why) =>panic!(" "),
+			Ok(file) => file,
+		};
+	    	
+		file.read_to_string(&mut save_string);
+
+		let mut line_buffer = String::new();
+		let mut par_buffer = String::new();
+		let mut gen_buffer = String::new();
+
+		gen_buffer = save_string.clone();
+
+		line_buffer = line_n(gen_buffer, slot);
+		par_buffer = parameter_return(line_buffer, String::from("EMPTY"));
+
+		if par_buffer == String::from("YES       ") {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+//==================================
+//TERMINAL INTERACTION FUNCTIONS
+//==================================
+
+	//get string from keyboard then return as string
+	fn get_string() -> String {
+		let mut user_input = String::new();
+		io::stdin()
+			.read_line(&mut user_input)
+			.expect(" ");
+		user_input = String::from(user_input.trim());
+		return user_input;
+	}
+
+
 //==================================
 //STRING MANIPULATION FUNCTIONS
 //==================================
