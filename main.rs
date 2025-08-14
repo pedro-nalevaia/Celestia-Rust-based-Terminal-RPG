@@ -1,6 +1,16 @@
 use std::io;
 use std::io::prelude::*;
 use std::fs::File;
+use std::time;
+use std::time::{SystemTime, Duration};
+
+//This file is divided in
+//main function
+//MENU FUNCTIONS: Show different scenes and screens
+//DATA MANIPULATION FUNCTIONS
+//TERMINAL INTERACTION FUNCTIONS
+//STRING MANIPULATION FUNCTIONS
+//DATA GENERATING FUNCTIONS
 
 fn main() {
 
@@ -10,16 +20,26 @@ fn main() {
 	//Scene Key
 	//1 - menu
 	//2 - file_screen
-	//
+	//3 -char creation
+	
 
+
+	//at the start of a game session, we need to generate a random seed to use in dice rolls
+	let mut now = SystemTime::now();
+	let mut rand_seed: u32 = 0;	
+	
+	//determines the scene
 	let mut interface = 1;
 
 	loop {
 		if interface == 1 {
-			 interface = main_menu();
+			 interface = main_menu(now, &mut rand_seed);
 		}
 		if interface == 2 {
 			interface = file_management();
+		}
+		if interface == 3 {
+			interface = char_creation(&mut rand_seed);
 		}
 	}
      }
@@ -29,7 +49,7 @@ fn main() {
 //MENU FUNCTIONS
 //===================================
 
-	fn main_menu() -> i32 {
+	fn main_menu(now: SystemTime, rand_seed: &mut u32) -> i32 {
 
 		use std::process;
 		let mut user_input;
@@ -54,7 +74,19 @@ fn main() {
 			user_input = get_string(); 
 	  	        
 	  	        if user_input == String::from("1") {
-	  	            return 2;
+				match now.elapsed() {
+					Ok(elapsed) => {
+						*rand_seed = elapsed.subsec_nanos();
+						*rand_seed = *rand_seed / 100;
+						*rand_seed = *rand_seed % 100000;
+					}
+
+					Err(e) => {
+						println!("Error at initializing random seed");
+					}
+
+				}
+	  	            	return 2;
 	  	        }
 	  	        else if user_input == String::from("2") {
 	  	            println!("Bye!");
@@ -70,6 +102,7 @@ fn main() {
 	
 	    //save data
 	    let mut user_input;
+	    let mut interface_return;
 	    
 	    //usefull to know the slots must have 30 characters of spacing
 	loop{	
@@ -112,6 +145,7 @@ fn main() {
 			return 1;
 		}
 		//converts string to integer and proceds to file manipulation
+
 		else {
 			//the file number parser might be an integer or an error;
 			let mut file_number = user_input.parse::<i32>();
@@ -123,7 +157,19 @@ fn main() {
 					//sanity check for if the file_save exists
 					let allowed_values = vec![1,2,3,4,5,6];
 					if allowed_values.contains(&file_number) {
-						file_manipulation(file_number);
+						
+						//Out of the file manipulation, we can either go to char_creation or back here, a value of 2, returns to the loop 
+						//here
+
+						interface_return = file_manipulation(file_number);
+
+						if interface_return == 2 {
+							();
+							}
+						
+						if interface_return == 3{
+							return interface_return;
+							}
 					}
 				}
 				Err(file_number) => (),
@@ -134,8 +180,35 @@ fn main() {
 
 //==========================================================================================	
 
-	fn char_creation() {
-		println!("To be implemented");
+	fn char_creation(rand_seed: &mut u32) -> i32 {
+
+		//initialize char stats; for now, these only exist in this function
+		
+		let mut stre: u32;
+		let mut dex: u32;
+		let mut int: u32;
+		let mut cons: u32;
+		let mut sab: u32;
+		let mut car: u32;
+
+		stre = random(rand_seed, 3, 18);
+		dex = random(rand_seed, 3, 18);
+		int = random(rand_seed, 3, 18);
+		cons = random(rand_seed, 3, 18);
+		sab = random(rand_seed, 3, 18);
+		car = random(rand_seed, 3, 18);
+
+		println!("======================");
+		println!("|Your stats are:     |");
+		println!("|Strenght     {}     |", stre);
+		println!("|Dexterity    {}     |", dex);
+		println!("|Inteligence  {}     |", int);
+		println!("|Constitution {}     |", cons);
+		println!("|Wisdom       {}     |", sab);
+		println!("|Charisma     {}     |", car);
+		println!("======================");
+		
+		return 0;
 	}
 
 //==================================
@@ -145,37 +218,38 @@ fn main() {
 		println!("To be implemented");
 	}
 
-	fn file_manipulation(file_number: i32) {
-		println!("================================");
+	fn file_manipulation(file_number: i32) -> i32 {
+	loop {
+	    	println!("=======================================");
 	    	println!("|Slot {}-{}|", file_number, file_display(file_number));
-		println!("================================");
+	    	println!("=======================================");
 	
 		let mut user_input;
 
 		//the option bar depends on wether the file is empty or not so we handle that
 		if is_slot_empty(file_number) == true {
-			println!("|a-Start New Game              |");
-			println!("|b-Back to File Selection      |");
-			println!("================================");
+			println!("|1-Start New Game                     |");
+			println!("|2-Back to File Selection             |");
+	    		println!("=======================================");
 
 			user_input = get_string();
 
 
 			if user_input == String::from("1") {
-				char_creation();
+				return 3; //new_char scene
 			}
 			
 			if user_input == String::from("2") {
-				file_management();	
+				return 2;
 			}
 			else {
-				file_manipulation(file_number);
+				();
 			}
 		}
 		else {
 			println!("to be implemented");
 		}
-
+	}
 	}
 
 	//this function outputs a 30 char string with the characteristics of the slot that are shown in the interface
@@ -334,4 +408,33 @@ fn same_return(text:String, parameter:String) -> i32{
         
 
     }
+}
+
+//======================================
+//DATA GENERATION FUNCTIONS
+//======================================
+
+fn seed_update(seed: u32) -> u32 {
+	let mut ret_seed;
+	ret_seed = seed;
+	ret_seed = (seed * 33  + 19 );
+	ret_seed = ret_seed % 1000000;
+	return ret_seed;
+}
+
+fn random(curr_seed: &mut u32, from: u32, to: u32) -> u32 {
+	
+	//generates the random number
+
+	let mut range = to - from + 1;
+	println!("range is {}", range);
+	println!("seed is {}", *curr_seed);
+	let mut add = *curr_seed % range;
+	let mut return_n = from + add;
+
+	//applies modification to seed
+
+	*curr_seed = seed_update(*curr_seed);
+
+	return return_n;
 }
