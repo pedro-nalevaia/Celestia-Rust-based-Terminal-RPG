@@ -1,16 +1,69 @@
+//This file is divided in
+//use calls
+//structs
+//static declarations
+
+//FUNCTIONS
+
+//main function
+
+//GAME:
+//INVENTORY MANAGEMENT FUNCTIONS
+
+//META:
+//MENU FUNCTIONS: Show different scenes and screens
+//DATA MANIPULATION FUNCTIONS
+//TERMINAL INTERACTION FUNCTIONS
+//STRING MANIPULATION FUNCTIONS
+//DATA GENERATING FUNCTIONS
+
+//===================================================
+//USE CALLS
+//==================================================================
+
+//bc I'm crazy!
+#![allow(warnings)]
+
 use std::io;
 use std::io::prelude::*;
 use std::fs::File;
 use std::time;
 use std::time::{SystemTime, Duration};
 
-//This file is divided in
-//main function
-//MENU FUNCTIONS: Show different scenes and screens
-//DATA MANIPULATION FUNCTIONS
-//TERMINAL INTERACTION FUNCTIONS
-//STRING MANIPULATION FUNCTIONS
-//DATA GENERATING FUNCTIONS
+//=====================================================================
+//STRUCT DECLARATIONS
+//=====================================================================
+	//Declares the player struct
+	struct player_dec {
+		name: String;
+		stats: Vec<i32>;
+		class: String;
+		inventory: sInventory;
+	}
+
+	//Declares the inventory struct
+	struct sInventory {
+		maxSize: u32;
+		items: Vec<Item>;
+
+	}
+
+	struct Item {
+		name:String;
+		Description:String;
+		var_1: u32;
+		var_2: u32;
+
+	}
+
+//======================
+//STATIC DECLARATIONS
+//=======================
+static mut RANDOM_SEED: u32 = 0;
+
+//========================
+//FUNCTIONS
+//====================
 
 fn main() {
 
@@ -28,6 +81,17 @@ fn main() {
 	let mut now = SystemTime::now();
 	let mut rand_seed: u32 = 0;	
 	
+	//Initializes the player struct
+	let player = player_dec {
+		name:String::new();
+		stats:Vec::new();
+		class:String::new();
+		inventory: sInventory {
+			maxSize: 20;
+			items:Vec::new();
+		}
+	}
+
 	//determines the scene
 	let mut interface = 1;
 
@@ -39,7 +103,7 @@ fn main() {
 			interface = file_management();
 		}
 		if interface == 3 {
-			interface = char_creation(&mut rand_seed);
+			interface = char_creation(&mut rand_seed, &mut player);
 		}
 	}
      }
@@ -49,7 +113,7 @@ fn main() {
 //MENU FUNCTIONS
 //===================================
 
-	fn main_menu(now: SystemTime, rand_seed: &mut u32) -> i32 {
+fn main_menu(now: SystemTime) -> i32 {
 
 		use std::process;
 		let mut user_input;
@@ -76,9 +140,11 @@ fn main() {
 	  	        if user_input == String::from("1") {
 				match now.elapsed() {
 					Ok(elapsed) => {
-						*rand_seed = elapsed.subsec_nanos();
-						*rand_seed = *rand_seed / 100;
-						*rand_seed = *rand_seed % 100000;
+						unsafe{
+						RANDOM_SEED = elapsed.subsec_nanos();
+						RANDOM_SEED = RANDOM_SEED / 100;
+						RANDOM_SEED = RANDOM_SEED % 100000;
+						}
 					}
 
 					Err(e) => {
@@ -178,11 +244,13 @@ fn main() {
 	    }
 	}
 
+
 //==========================================================================================	
 
-	fn char_creation(rand_seed: &mut u32) -> i32 {
+	fn char_creation(rand_seed: &mut u32, p: &mut player) -> i32 {
 
 		//initialize char stats; for now, these only exist in this function
+		let mut flag_redo = false;
 		
 		let mut stre: u32;
 		let mut dex: u32;
@@ -191,23 +259,151 @@ fn main() {
 		let mut sab: u32;
 		let mut car: u32;
 
-		stre = random(rand_seed, 3, 18);
-		dex = random(rand_seed, 3, 18);
-		int = random(rand_seed, 3, 18);
-		cons = random(rand_seed, 3, 18);
-		sab = random(rand_seed, 3, 18);
-		car = random(rand_seed, 3, 18);
+		let mut class = String::new();
 
-		println!("======================");
-		println!("|Your stats are:     |");
-		println!("|Strenght     {}     |", stre);
-		println!("|Dexterity    {}     |", dex);
-		println!("|Inteligence  {}     |", int);
-		println!("|Constitution {}     |", cons);
-		println!("|Wisdom       {}     |", sab);
-		println!("|Charisma     {}     |", car);
-		println!("======================");
+		let mut class_choosen :bool = false;
+
+		loop {
+
+			stre = random(3, 18);
+			dex = random(3, 18);
+			int = random(3, 18);
+			cons = random(3, 18);
+			sab = random(3, 18);
+			car = random(3, 18);
+
+			println!("======================");
+			println!("|Your stats are:     |");
+			println!("|Strenght     {:>2}     |", stre);
+			println!("|Dexterity    {:>2}     |", dex);
+			println!("|Inteligence  {:>2}     |", int);
+			println!("|Constitution {:>2}     |", cons);
+			println!("|Wisdom       {:>2}     |", sab);
+			println!("|Charisma     {:>2}     |", car);
+			println!("======================");
+			println!(" ");
+			println!("======================");
+			println!("|(1) Accept          |");
+			println!("|(2) Re-roll         |");
+			println!("======================");
+
+			loop {
+				if flag_redo == true {
+					break;
+				}
+
+				let mut user_input = get_string();
+
+				if user_input == String::from("2") {
+					break(); //loop from generation screen
+				}
+				
+				else if user_input == String::from("1") {
+					
+					loop {
+						if flag_redo == true {
+							break;
+						}
+
+						println!("======================");
+						println!("|Select a Class      |");
+						println!("======================");
+						println!("| (1) Fighter        |");
+						println!("| (2) Mage           |");
+						println!("| (3) Thief          |");
+						println!("| (4) Cleric         |");
+						println!("======================");
+
+						user_input = get_string();
+
+						if class_chose == false {
+
+							if user_input == String::from("1") {
+								class = String::from("fighter");
+								class_chose = true;
+							}
+
+							else if user_input == 2 {
+								class = String::from("mage");
+								class_chose = true;
+								}
+							else if user_input == 3 {
+								class = String::from("thief");
+								class_chose = true;
+								}
+							else if user_input == 4 {
+								class = String::from("cleric");
+								class_chose = true;
+								}
+
+
+							else {
+								();
+							}
+						}
+						else {
+						//let's not do kit selection, let's let this be random
+						loop {
+							println!("======================");
+							println!("|Your character:     |");
+							println!("|                    |");
+							println!("|Class: {:>10}  |");
+							println!("|                    |");
+							println!("|Strenght     {:>2}     |", stre);
+							println!("|Dexterity    {:>2}     |", dex);
+							println!("|Inteligence  {:>2}     |", int);
+							println!("|Constitution {:>2}     |", cons);
+							println!("|Wisdom       {:>2}     |", sab);
+							println!("|Charisma     {:>2}     |", car);
+							println!("======================");
+							println!(" ");
+							println!("======================");
+							println!("|Is this ok?         |");
+							println!("| (1) Yes            |");
+							println!("| (2) No             |");
+							println!("======================");
+
+							user_input = get_string();
+
+							if user_input == String:from("1") {
+								println!("Name your character!");
+								user_input = get_string();
+
+								//now writes into the player struct
+
+								p.name = user_input;
+								p.class = class; 
+								p.stats.push(stre);
+								p.stats.push(dex);
+								p.stats.push(int);
+								p.stats.push(cons);
+								p.stats.push(sab);
+								p.stats.push(car);
+
+								//kit generation
+								//Define some starting items
+
+								}
+															
+							if user_input == String:from("2") {
+								//do this whole thing again! 
+								flag_redo = true;
+								break;
+							}
+							}
+
+							
+						}
+					}
+				}
+
+				else {
+					(); //bad command, loop
+	
+				}
+			}
 		
+		}
 		return 0;
 	}
 
@@ -338,9 +534,9 @@ fn parameter_return(text:String, parameter:String) -> String {
     let mut text_cursor_curr;
 
     let mut text_cpy = text.clone();
-    let mut par_cpy = parameter.clone();
+    let par_cpy = parameter.clone();
     
-    let mut start_cursor_position = same_return(text_cpy, par_cpy);
+    let start_cursor_position = same_return(text_cpy, par_cpy);
 
     let mut index = 0;
 
@@ -417,24 +613,53 @@ fn same_return(text:String, parameter:String) -> i32{
 fn seed_update(seed: u32) -> u32 {
 	let mut ret_seed;
 	ret_seed = seed;
-	ret_seed = (seed * 33  + 19 );
-	ret_seed = ret_seed % 1000000;
+
+	let mut operations :u128;
+	operations = ret_seed as u128;
+
+	operations = (operations * 1103515245  + 12345);
+	operations = (operations /65536) % 32768;
+
+	ret_seed = operations as u32;
+
 	return ret_seed;
 }
 
-fn random(curr_seed: &mut u32, from: u32, to: u32) -> u32 {
+fn random(from: u32, to: u32) -> u32 {
 	
 	//generates the random number
 
-	let mut range = to - from + 1;
-	println!("range is {}", range);
-	println!("seed is {}", *curr_seed);
-	let mut add = *curr_seed % range;
-	let mut return_n = from + add;
+	unsafe {
+	let range = to - from + 1;
+	let add = RANDOM_SEED % range;
+	let return_n = from + add;
 
 	//applies modification to seed
-
-	*curr_seed = seed_update(*curr_seed);
-
+	
+	
+	RANDOM_SEED = seed_update(RANDOM_SEED);
+	}
+	
 	return return_n;
+}
+
+//================================================
+//GAME FUNCTIONS
+//================================================	
+
+fn first_inv_initialization(p: &mut player_dec) {
+	let rations = Item {
+		name:String::from("Rations");
+		description:String::from("Travel rations, consume one per day to not get hungry!");
+		//duration in days
+		var_1: 7;
+		//this is wether this specific ration struct is full. It's full when it reaches 7.
+		//so it starts as full.
+		var_2; 1;
+	}
+
+		p.inventory.items.push(rations);
+		
+						
+
 }
